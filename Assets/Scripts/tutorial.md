@@ -39,9 +39,37 @@ In deze tutorial leer je hoe je een VR-racingspel kunt opzetten met een AI-agent
 
 #### Observations
 - 30 raycasts voor omgevingsperceptie
+  - 10 raycasts vooruit (verschillende hoeken)
+  - 10 raycasts links
+  - 10 raycasts rechts
+  - Raycast lengte: 20 meter
+  - Detecteert muren, obstakels en bochten
 - Rigid-body state (velocity, position, rotation)
 - Track checkpoints status
+  - Volgende checkpoint positie
+  - Afstand tot volgende checkpoint
+  - Hoek tussen huidige richting en checkpoint
 - Obstacle positions
+
+#### Track Layout
+- Checkpoints op strategische punten:
+  - Begin van elke bocht
+  - Midden van scherpe bochten
+  - Einde van elke bocht
+- Checkpoint radius: 5 meter
+- Visuele markers voor AI training:
+  - Rode lijnen voor bocht-waarschuwing
+  - Groene markers voor ideale race-lijn
+
+#### Corner Detection
+- Raycast pattern voor bocht-detectie:
+  - Dichte raycast cluster vooruit (5 raycasts)
+  - Verspreide raycasts naar zijkanten
+  - Langere raycasts in bochten
+- Bocht-classificatie:
+  - Scherpe bocht: > 90 graden
+  - Normale bocht: 45-90 graden
+  - Lichte bocht: < 45 graden
 
 #### Actions
 - Steering: [-1, 1] continuous
@@ -55,11 +83,16 @@ In deze tutorial leer je hoe je een VR-racingspel kunt opzetten met een AI-agent
 - Collision penalty: -0.5
 - Off-track penalty: -0.3 (triggered when vehicle height drops below track level)
 - Reset penalty: -1.0 (when vehicle falls off track and needs to respawn)
+- Corner handling bonus: +0.2 (for smooth cornering)
 - Speed bonus: proportional to velocity
 - Rubber-banding: dynamic scaling based on player-AI gap
 
 ### Training Process
 1. Curriculum learning met zelf-play
+   - Eerst leren van rechte stukken
+   - Dan lichte bochten
+   - Vervolgens scherpe bochten
+   - Tot slot complete circuits
 2. Progressive difficulty scaling
 3. Behavior cloning from human demonstrations
 4. Fine-tuning with PPO
