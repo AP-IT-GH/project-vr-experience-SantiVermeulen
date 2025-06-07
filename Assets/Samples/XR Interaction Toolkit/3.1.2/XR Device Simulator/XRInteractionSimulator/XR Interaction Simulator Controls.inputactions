@@ -199,28 +199,6 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "negative",
-                    "id": "3d2e07de-025e-4c2e-98df-250511a8ff6d",
-                    "path": "<Keyboard>/a",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "X Translate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "positive",
-                    "id": "04e1437d-c862-4a04-8f8e-40e9f52c4f5e",
-                    "path": "<Keyboard>/d",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "X Translate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
                     "name": "1D Axis",
                     "id": "cb7c4679-31f4-4170-885a-e7d78c049443",
                     "path": "1DAxis",
@@ -230,28 +208,6 @@
                     "action": "Z Translate",
                     "isComposite": true,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "negative",
-                    "id": "732e790c-f2a2-4f90-b525-53139a358de7",
-                    "path": "<Keyboard>/s",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Z Translate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "positive",
-                    "id": "d5a98916-ade7-419d-a138-86bcdf05670f",
-                    "path": "<Keyboard>/w",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Z Translate",
-                    "isComposite": false,
-                    "isPartOfComposite": true
                 },
                 {
                     "name": "1D Axis",
