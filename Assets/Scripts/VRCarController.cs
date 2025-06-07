@@ -1,114 +1,82 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class VRCarController : MonoBehaviour
+public class CarController : MonoBehaviour
 {
-    [Header("Input Actions")]
-    public InputActionReference accelerateAction; // Right trigger
-    public InputActionReference brakeAction;      // Left trigger
+    private float horizontalInput, verticalInput;
+    private float currentSteerAngle, currentbreakForce;
+    private bool isBreaking;
 
-    [Header("Car Settings")]
-    [SerializeField] private float maxSpeed = 20f;
-    [SerializeField] private float acceleration = 10f;
-    [SerializeField] private float brakeForce = 15f;
-    [SerializeField] private float turnSpeed = 100f;
-    [SerializeField] private float headTiltSensitivity = 0.5f;
-    
-    [Header("References")]
-    [SerializeField] private Transform headset;
-    [SerializeField] private Rigidbody carRigidbody;
-    [SerializeField] private Transform carModel;
-    
-    private float currentSpeed;
-    private float currentSteering;
-    private bool isGrounded;
-    
-    private void Start()
-    {
-        // Ensure we have all required components
-        if (carRigidbody == null)
-            carRigidbody = GetComponent<Rigidbody>();
-            
-        if (headset == null)
-            headset = Camera.main.transform;
-            
-        // Lock rigidbody rotation to prevent flipping
-        carRigidbody.constraints = RigidbodyConstraints.FreezeRotationX | 
-                                 RigidbodyConstraints.FreezeRotationZ;
+    // Settings
+    [SerializeField] private float motorForce, breakForce, maxSteerAngle;
 
-        // Enable input actions
-        accelerateAction.action.Enable();
-        brakeAction.action.Enable();
-    }
-    
-    private void Update()
+    // Wheel Colliders
+    [SerializeField] private WheelCollider frontLeftWheelCollider, frontRightWheelCollider;
+    [SerializeField] private WheelCollider rearLeftWheelCollider, rearRightWheelCollider;
+
+    // Wheels
+    [SerializeField] private Transform frontLeftWheelTransform, frontRightWheelTransform;
+    [SerializeField] private Transform rearLeftWheelTransform, rearRightWheelTransform;
+
+    private void FixedUpdate()
     {
-        float throttle = accelerateAction.action.ReadValue<float>();
-        float brake = brakeAction.action.ReadValue<float>();
-        
-        // Get head tilt for steering
-        float headTilt = headset.localEulerAngles.z;
-        if (headTilt > 180f) headTilt -= 360f;
-        currentSteering = -headTilt * headTiltSensitivity;
-        
-        // Apply movement
-        MoveCar(throttle, brake);
-        SteerCar();
+        GetInput();
+        HandleMotor();
+        HandleSteering();
+        UpdateWheels();
     }
-    
-    private void MoveCar(float throttle, float brake)
+
+    private void GetInput()
     {
-        // Calculate target speed
-        float targetSpeed = throttle * maxSpeed;
-        
-        // Apply acceleration or braking
-        if (brake > 0.1f)
-        {
-            currentSpeed = Mathf.Lerp(currentSpeed, 0f, brake * brakeForce * Time.deltaTime);
-        }
-        else
-        {
-            currentSpeed = Mathf.Lerp(currentSpeed, targetSpeed, acceleration * Time.deltaTime);
-        }
-        
-        // Apply movement
-        Vector3 movement = transform.forward * currentSpeed;
-        carRigidbody.linearVelocity = movement;
+        // Steering Input
+        horizontalInput = Input.GetAxis("Horizontal");
+
+        // Acceleration Input
+        verticalInput = Input.GetAxis("Vertical");
+
+        // Breaking Input
+        isBreaking = Input.GetKey(KeyCode.Space);
     }
-    
-    private void SteerCar()
+
+    private void HandleMotor()
     {
-        // Apply steering rotation
-        float turnAmount = currentSteering * turnSpeed * Time.deltaTime;
-        transform.Rotate(0f, turnAmount, 0f);
-        
-        // Tilt car model for visual feedback
-        if (carModel != null)
-        {
-            float targetTilt = -currentSteering * 15f; // Max 15 degrees tilt
-            carModel.localRotation = Quaternion.Lerp(
-                carModel.localRotation,
-                Quaternion.Euler(0f, 0f, targetTilt),
-                Time.deltaTime * 5f
-            );
-        }
+        frontLeftWheelCollider.motorTorque = verticalInput * motorForce;
+        frontRightWheelCollider.motorTorque = verticalInput * motorForce;
+        currentbreakForce = isBreaking ? breakForce : 0f;
+        ApplyBreaking();
     }
-    
-    private void OnCollisionEnter(Collision collision)
+
+    private void ApplyBreaking()
     {
-        // Check if we hit the ground
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = true;
-        }
+        frontRightWheelCollider.brakeTorque = currentbreakForce;
+        frontLeftWheelCollider.brakeTorque = currentbreakForce;
+        rearLeftWheelCollider.brakeTorque = currentbreakForce;
+        rearRightWheelCollider.brakeTorque = currentbreakForce;
     }
-    
-    private void OnCollisionExit(Collision collision)
+
+    private void HandleSteering()
     {
-        // Check if we left the ground
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = false;
-        }
+        currentSteerAngle = maxSteerAngle * horizontalInput;
+        frontLeftWheelCollider.steerAngle = currentSteerAngle;
+        frontRightWheelCollider.steerAngle = currentSteerAngle;
     }
-} 
+
+    private void UpdateWheels()
+    {
+        UpdateSingleWheel(frontLeftWheelCollider, frontLeftWheelTransform);
+        UpdateSingleWheel(frontRightWheelCollider, frontRightWheelTransform);
+        UpdateSingleWheel(rearRightWheelCollider, rearRightWheelTransform);
+        UpdateSingleWheel(rearLeftWheelCollider, rearLeftWheelTransform);
+    }
+
+    private void UpdateSingleWheel(WheelCollider wheelCollider, Transform wheelTransform)
+    {
+        Vector3 pos;
+        Quaternion rot;
+        wheelCollider.GetWorldPose(out pos, out rot);
+        wheelTransform.rotation = rot;
+        wheelTransform.position = pos;
+    }
+}
