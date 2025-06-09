@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class CarController : MonoBehaviour
 {
@@ -31,10 +32,23 @@ public class CarController : MonoBehaviour
     [SerializeField] private InputActionReference steerAction;
     [SerializeField] private InputActionReference accelerateAction;
     [SerializeField] private InputActionReference brakeAction;
+    [SerializeField] private InputActionReference resetSceneAction;
 
     // --- Private Variabelen ---
     private float horizontalInput, verticalInput;
     private float currentSteerAngle, currentbreakForce;
+
+    private void OnEnable()
+    {
+        resetSceneAction.action.performed += OnResetScene;
+        resetSceneAction.action.Enable();
+    }
+
+    private void OnDisable()
+    {
+        resetSceneAction.action.performed -= OnResetScene;
+        resetSceneAction.action.Disable();
+    }
 
     private void FixedUpdate()
     {
@@ -99,5 +113,10 @@ public class CarController : MonoBehaviour
         wheelCollider.GetWorldPose(out pos, out rot);
         wheelTransform.rotation = rot;
         wheelTransform.position = pos;
+    }
+
+    private void OnResetScene(InputAction.CallbackContext context)
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
