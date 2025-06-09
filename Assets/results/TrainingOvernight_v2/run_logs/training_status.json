@@ -1,0 +1,65 @@
+{
+    "Racer": {
+        "checkpoints": [
+            {
+                "steps": 999970,
+                "file_path": "results\\TrainingOvernight_v2\\Racer\\Racer-999970.onnx",
+                "reward": 70.20279484391213,
+                "creation_time": 1749484978.4763496,
+                "auxillary_file_paths": [
+                    "results\\TrainingOvernight_v2\\Racer\\Racer-999970.pt"
+                ]
+            },
+            {
+                "steps": 1499972,
+                "file_path": "results\\TrainingOvernight_v2\\Racer\\Racer-1499972.onnx",
+                "reward": 75.0739951133728,
+                "creation_time": 1749485520.046937,
+                "auxillary_file_paths": [
+                    "results\\TrainingOvernight_v2\\Racer\\Racer-1499972.pt"
+                ]
+            },
+            {
+                "steps": 1999986,
+                "file_path": "results\\TrainingOvernight_v2\\Racer\\Racer-1999986.onnx",
+                "reward": 63.447195225954054,
+                "creation_time": 1749486059.1098528,
+                "auxillary_file_paths": [
+                    "results\\TrainingOvernight_v2\\Racer\\Racer-1999986.pt"
+                ]
+            },
+            {
+                "steps": 2499971,
+                "file_path": "results\\TrainingOvernight_v2\\Racer\\Racer-2499971.onnx",
+                "reward": 70.24199419362205,
+                "creation_time": 1749486591.0251112,
+                "auxillary_file_paths": [
+                    "results\\TrainingOvernight_v2\\Racer\\Racer-2499971.pt"
+                ]
+            },
+            {
+                "steps": 2939131,
+                "file_path": "results\\TrainingOvernight_v2\\Racer\\Racer-2939131.onnx",
+                "reward": 49.25224639289081,
+                "creation_time": 1749487053.8169138,
+                "auxillary_file_paths": [
+                    "results\\TrainingOvernight_v2\\Racer\\Racer-2939131.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 2939131,
+            "file_path": "results\\TrainingOvernight_v2\\Racer.onnx",
+            "reward": 49.25224639289081,
+            "creation_time": 1749487053.8169138,
+            "auxillary_file_paths": [
+                "results\\TrainingOvernight_v2\\Racer\\Racer-2939131.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.30.0",
+        "torch_version": "1.7.1+cu110"
+    }
+}

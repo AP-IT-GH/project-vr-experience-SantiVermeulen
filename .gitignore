@@ -16,7 +16,6 @@
 # ================================== #
 # The results folder contains training logs and model checkpoints.
 # It can become very large. Only commit your final, exported .onnx model.
-results/
 
 # Python virtual environment
 venv/
