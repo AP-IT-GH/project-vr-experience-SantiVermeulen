@@ -124,7 +124,8 @@ public class AgentCarController : Agent
     {
         if (collision.gameObject.CompareTag("Wall"))
         {
-            AddReward(-0.5f);
+            AddReward(-1.0f);
+            Debug.Log("Muur geraakt: -1,0");
         }
     }
 
