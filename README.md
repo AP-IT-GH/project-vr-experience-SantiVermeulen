@@ -7,7 +7,7 @@
 Virtual Reality biedt een ongeëvenaarde immersie voor racegames, maar de ervaring wordt vaak beperkt door voorspelbare, gescripte AI-tegenstanders. 
 Dit project doorbreekt die conventie door gebruik te maken van Unity's ML-Agents om een PPO-agent (Proximal Policy Optimization) te trainen. 
 De AI leert niet alleen de optimale racelijn, 
-maar ook emergent gedrag zoals het ontwijken van obstakels en het strategisch gebruiken van een turbo. Het resultaat is een tegenstander 
+maar ook emergent gedrag zoals het ontwijken van obstakels. Het resultaat is een tegenstander 
 die zich aanpast en elke race uniek maakt, wat zorgt voor een dynamische en herspeelbare ervaring.
 
 Aan het einde van deze tutorial heeft u een werkende Unity-omgeving opgezet waarin een ML-Agents PPO-model is geconfigureerd en getraind. 
