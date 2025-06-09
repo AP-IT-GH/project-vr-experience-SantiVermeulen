@@ -11,11 +11,10 @@ public class Checkpoint : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Controleer of het een AI-auto is
-        if (other.TryGetComponent<AgentCarController>(out AgentCarController agentCar))
+        // Meldt aan de manager welke auto door dit checkpoint is gereden.
+        if (other.CompareTag("Car"))
         {
-            // Laat de manager weten dat we een checkpoint hebben geraakt
-            trackCheckpoints.AgentPassedCheckpoint(this, agentCar);
+            trackCheckpoints.CarPassedCheckpoint(this, other.transform);
         }
     }
 }

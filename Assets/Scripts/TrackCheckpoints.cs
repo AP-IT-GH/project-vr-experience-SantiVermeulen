@@ -1,70 +1,132 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class TrackCheckpoints : MonoBehaviour
 {
-    // Deze lijst moet in de Unity Editor worden gevuld met de checkpoints in de juiste volgorde
+    // Sleep al je checkpoint objecten hierin in de Unity Editor, in de juiste volgorde.
     [SerializeField] private List<Checkpoint> checkpointList;
-    
-    // Een dictionary om bij te houden welke agent bij welk checkpoint is
-    private Dictionary<AgentCarController, int> nextCheckpointIndexDict;
 
-    private void Awake()
+    // De dictionary die de voortgang van elke auto bijhoudt.
+    private Dictionary<Transform, CheckpointData> carCheckpointDataDict = new Dictionary<Transform, CheckpointData>();
+
+    // Een interne class om de data per auto op te slaan.
+    private class CheckpointData
     {
-        nextCheckpointIndexDict = new Dictionary<AgentCarController, int>();
-        // Zorg ervoor dat elk checkpoint-script een referentie naar deze manager heeft
+        public int lap = 0;
+        public int nextCheckpointIndex = 0;
+        public float distanceToNextCheckpoint = 0f;
+    }
+
+    // Gebruik Start() om zeker te weten dat alle objecten zijn geladen voordat we ze zoeken.
+    private void Start()
+    {
+        // Koppel de checkpoints aan deze manager.
         foreach (Checkpoint checkpoint in checkpointList)
         {
             checkpoint.SetTrackManager(this);
         }
-    }
 
-    // Reset de voortgang van een specifieke agent
-    public void ResetCheckpoints(AgentCarController agent)
-    {
-        nextCheckpointIndexDict[agent] = 0;
-    }
-
-    // **AANPASSING:** Accepteert nu de agent als parameter
-    public Vector3 GetNextCheckpointPosition(AgentCarController agent)
-    {
-        // Controleer of we deze agent wel kennen
-        if (nextCheckpointIndexDict.ContainsKey(agent))
+        // Ga actief op zoek naar alle auto's met de "Car" tag en registreer ze.
+        GameObject[] cars = GameObject.FindGameObjectsWithTag("Car");
+        foreach (GameObject car in cars)
         {
-            int checkpointIndex = nextCheckpointIndexDict[agent];
-            return checkpointList[checkpointIndex].transform.position;
-        }
-        else
-        {
-            // Foutafhandeling: als de agent om een of andere reden niet in de lijst staat
-            Debug.LogError($"Agent {agent.gameObject.name} niet gevonden in de dictionary! Kan checkpoint niet bepalen.");
-            return transform.position; // Geef een veilige, neutrale positie terug
+            RegisterCar(car.transform);
         }
     }
 
-    // Wordt aangeroepen door een Checkpoint wanneer een agent erdoorheen rijdt
-    public void AgentPassedCheckpoint(Checkpoint checkpoint, AgentCarController agent)
+    // Update de afstand tot het volgende checkpoint voor een accurate ranglijst.
+    private void LateUpdate()
     {
-        // Controleer of de agent wel bekend is
-        if (!nextCheckpointIndexDict.ContainsKey(agent)) return;
-        
-        int nextCheckpointIndex = nextCheckpointIndexDict[agent];
-
-        // Controleer of dit het juiste checkpoint in de reeks is
-        if (checkpointList.IndexOf(checkpoint) == nextCheckpointIndex)
+        if (carCheckpointDataDict == null) return;
+        foreach (var entry in carCheckpointDataDict)
         {
-            agent.CheckpointPassed(); // Geef de agent zijn beloning
-            
-            // Ga naar het volgende checkpoint in de lijst
-            nextCheckpointIndexDict[agent] = (nextCheckpointIndex + 1) % checkpointList.Count;
-
-            // Als we weer bij het begin zijn, hebben we een volledige ronde voltooid
-            if (nextCheckpointIndexDict[agent] == 0)
+            if (entry.Key != null && checkpointList != null && checkpointList.Count > 0)
             {
-                Debug.Log($"Agent {agent.gameObject.name} heeft een ronde voltooid!");
-                agent.AddReward(5.0f); // Geef een grote bonusbeloning voor een volledige ronde
-                agent.EndEpisode();    // Start een nieuwe episode na een succesvolle ronde
+                int checkpointIndex = entry.Value.nextCheckpointIndex;
+                Vector3 checkpointPos = checkpointList[checkpointIndex].transform.position;
+                entry.Value.distanceToNextCheckpoint = Vector3.Distance(entry.Key.position, checkpointPos);
             }
         }
+    }
+
+    // Registreert een nieuwe auto voor de race.
+    public void RegisterCar(Transform carTransform)
+    {
+        if (!carCheckpointDataDict.ContainsKey(carTransform))
+        {
+            carCheckpointDataDict.Add(carTransform, new CheckpointData());
+            Debug.Log($"Auto '{carTransform.name}' is geregistreerd voor de race.");
+        }
+    }
+
+    // Reset de voortgang voor een specifieke auto (voor ML-Agents).
+    public void ResetCheckpoints(Transform carTransform)
+    {
+        if (carCheckpointDataDict.ContainsKey(carTransform))
+        {
+            carCheckpointDataDict[carTransform].nextCheckpointIndex = 0;
+            carCheckpointDataDict[carTransform].lap = 0;
+        }
+    }
+
+    // Verwerkt een gepasseerd checkpoint.
+    public void CarPassedCheckpoint(Checkpoint checkpoint, Transform carTransform)
+    {
+        if (!carCheckpointDataDict.ContainsKey(carTransform)) return;
+
+        CheckpointData data = carCheckpointDataDict[carTransform];
+
+        if (checkpointList.IndexOf(checkpoint) == data.nextCheckpointIndex)
+        {
+            data.nextCheckpointIndex = (data.nextCheckpointIndex + 1) % checkpointList.Count;
+
+            if (data.nextCheckpointIndex == 0)
+            {
+                data.lap++;
+                Debug.Log($"{carTransform.name} heeft ronde {data.lap} voltooid!");
+            }
+
+            if (carTransform.TryGetComponent<AgentCarController>(out AgentCarController agent))
+            {
+                agent.CheckpointPassed();
+                if (data.lap > 0 && data.nextCheckpointIndex == 0)
+                {
+                    agent.AddReward(5.0f);
+                }
+            }
+        }
+    }
+
+    // Geeft de positie van het volgende checkpoint voor een specifieke auto.
+    public Vector3 GetNextCheckpointPosition(Transform carTransform)
+    {
+        if (carCheckpointDataDict.ContainsKey(carTransform))
+        {
+            int checkpointIndex = carCheckpointDataDict[carTransform].nextCheckpointIndex;
+            return checkpointList[checkpointIndex].transform.position;
+        }
+        return transform.position;
+    }
+
+    // Berekent en retourneert de huidige ranglijst.
+    public List<Transform> GetRankings()
+    {
+        return carCheckpointDataDict.Keys
+            .OrderByDescending(car => carCheckpointDataDict[car].lap)
+            .ThenByDescending(car => carCheckpointDataDict[car].nextCheckpointIndex)
+            .ThenBy(car => carCheckpointDataDict[car].distanceToNextCheckpoint)
+            .ToList();
+    }
+
+    // Controleert of een auto een geldige ronde heeft voltooid om te finishen.
+    public bool HasCompletedLap(Transform carTransform)
+    {
+        if (carCheckpointDataDict.ContainsKey(carTransform))
+        {
+            var data = carCheckpointDataDict[carTransform];
+            return data.lap >= 1 && data.nextCheckpointIndex == 0;
+        }
+        return false;
     }
 }
