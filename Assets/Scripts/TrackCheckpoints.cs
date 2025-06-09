@@ -4,38 +4,18 @@ using System.Linq;
 
 public class TrackCheckpoints : MonoBehaviour
 {
-    // Sleep al je checkpoint objecten hierin in de Unity Editor, in de juiste volgorde.
     [SerializeField] private List<Checkpoint> checkpointList;
-
-    // De dictionary die de voortgang van elke auto bijhoudt.
     private Dictionary<Transform, CheckpointData> carCheckpointDataDict = new Dictionary<Transform, CheckpointData>();
 
-    // Een interne class om de data per auto op te slaan.
-    private class CheckpointData
-    {
-        public int lap = 0;
-        public int nextCheckpointIndex = 0;
-        public float distanceToNextCheckpoint = 0f;
-    }
+    private class CheckpointData { public int lap = 0; public int nextCheckpointIndex = 0; public float distanceToNextCheckpoint = 0f; }
 
-    // Gebruik Start() om zeker te weten dat alle objecten zijn geladen voordat we ze zoeken.
     private void Start()
     {
-        // Koppel de checkpoints aan deze manager.
-        foreach (Checkpoint checkpoint in checkpointList)
-        {
-            checkpoint.SetTrackManager(this);
-        }
-
-        // Ga actief op zoek naar alle auto's met de "Car" tag en registreer ze.
+        foreach (Checkpoint checkpoint in checkpointList) { checkpoint.SetTrackManager(this); }
         GameObject[] cars = GameObject.FindGameObjectsWithTag("Car");
-        foreach (GameObject car in cars)
-        {
-            RegisterCar(car.transform);
-        }
+        foreach (GameObject car in cars) { RegisterCar(car.transform); }
     }
 
-    // Update de afstand tot het volgende checkpoint voor een accurate ranglijst.
     private void LateUpdate()
     {
         if (carCheckpointDataDict == null) return;
@@ -50,7 +30,6 @@ public class TrackCheckpoints : MonoBehaviour
         }
     }
 
-    // Registreert een nieuwe auto voor de race.
     public void RegisterCar(Transform carTransform)
     {
         if (!carCheckpointDataDict.ContainsKey(carTransform))

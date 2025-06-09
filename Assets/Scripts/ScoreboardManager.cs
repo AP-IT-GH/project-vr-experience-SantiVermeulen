@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public class ScoreboardManager : MonoBehaviour
 {
-    // Sleep je TrackManager en UI Text-objecten hierin.
     [SerializeField] private TrackCheckpoints trackCheckpoints;
     [SerializeField] private TextMeshProUGUI firstPlaceText;
     [SerializeField] private TextMeshProUGUI secondPlaceText;
@@ -28,11 +27,5 @@ public class ScoreboardManager : MonoBehaviour
             secondPlaceText.text = "2. " + rankings[1].name;
         else
             secondPlaceText.text = "2. ...";
-    }
-
-    public void ShowFinalRankings()
-    {
-        UpdateScoreboard();
-        Debug.Log("Eindstand wordt getoond.");
     }
 }
