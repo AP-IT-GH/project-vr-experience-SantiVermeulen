@@ -39,7 +39,7 @@ public class AgentCarController : Agent
         startRotation = transform.rotation;
         
         // Versnel de simulatie voor snellere training
-        Time.timeScale = 20.0f;
+        Time.timeScale = 1.0f;
     }
 
     public override void OnEpisodeBegin()
