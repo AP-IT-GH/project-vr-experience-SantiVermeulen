@@ -25968,8 +25968,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f3764d9494337e4ba6c10b4b715eef3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  checkpointList:
-  - {fileID: 148620281}
+  checkpointList: []
 --- !u!1 &1251114014
 GameObject:
   m_ObjectHideFlags: 0
