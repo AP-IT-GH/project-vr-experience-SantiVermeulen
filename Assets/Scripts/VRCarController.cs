@@ -1,41 +1,52 @@
 using UnityEngine;
-using UnityEngine.InputSystem; // NEW: Import the new Input System namespace
+using UnityEngine.InputSystem;
 
 public class CarController : MonoBehaviour
 {
-    private float horizontalInput, verticalInput;
-    private float currentSteerAngle, currentbreakForce;
-    // 'isBreaking' is no longer needed as we can read brake force directly
+    // Deze variabele bepaalt of de auto kan bewegen.
+    public bool canControl = false;
 
-    // --- SETTINGS ---
+    // --- Instellingen ---
     [Header("Car Settings")]
     [SerializeField] private float motorForce = 500f;
     [SerializeField] private float breakForce = 800f;
     [SerializeField] private float maxSteerAngle = 30f;
 
-    // --- WHEEL COLLIDERS ---
+    // --- Wiel Colliders ---
     [Header("Wheel Colliders")]
     [SerializeField] private WheelCollider frontLeftWheelCollider;
     [SerializeField] private WheelCollider frontRightWheelCollider;
     [SerializeField] private WheelCollider rearLeftWheelCollider;
     [SerializeField] private WheelCollider rearRightWheelCollider;
 
-    // --- WHEEL TRANSFORMS (for visual updates) ---
+    // --- Visuele Wielen ---
     [Header("Wheel Visuals")]
     [SerializeField] private Transform frontLeftWheelTransform;
     [SerializeField] private Transform frontRightWheelTransform;
     [SerializeField] private Transform rearLeftWheelTransform;
     [SerializeField] private Transform rearRightWheelTransform;
 
-    // --- NEW: INPUT ACTIONS ---
+    // --- Input Acties ---
     [Header("Input Actions")]
     [SerializeField] private InputActionReference steerAction;
-    [SerializeField] private InputActionReference accelerateAction; // For gas (right trigger)
-    [SerializeField] private InputActionReference brakeAction;      // For brake/reverse (left trigger)
+    [SerializeField] private InputActionReference accelerateAction;
+    [SerializeField] private InputActionReference brakeAction;
 
+    // --- Private Variabelen ---
+    private float horizontalInput, verticalInput;
+    private float currentSteerAngle, currentbreakForce;
 
     private void FixedUpdate()
     {
+        // Als we geen controle hebben, doe dan niets.
+        if (!canControl)
+        {
+            // Zorg ervoor dat de auto stopt als de controle wegvalt.
+            frontLeftWheelCollider.motorTorque = 0;
+            frontRightWheelCollider.motorTorque = 0;
+            return;
+        }
+
         GetInput();
         HandleMotor();
         HandleSteering();
@@ -44,37 +55,22 @@ public class CarController : MonoBehaviour
 
     private void GetInput()
     {
-        // This method now reads from the new Input System Actions
-
-        // Steering: Read the X-axis from a Vector2 action (like a thumbstick)
         horizontalInput = steerAction.action.ReadValue<Vector2>().x;
-
-        // Acceleration & Reverse: 
-        // Read the float value from the gas trigger (0 to 1)
         float gasValue = accelerateAction.action.ReadValue<float>();
-        // Read the float value from the brake/reverse trigger (0 to 1)
         float brakeReverseValue = brakeAction.action.ReadValue<float>();
-
-        // Combine them: Right trigger adds torque, Left trigger subtracts it (for reverse)
         verticalInput = gasValue - brakeReverseValue;
-
-        // Braking: Apply brake force proportional to how much the left trigger is pressed
         currentbreakForce = brakeReverseValue * breakForce;
     }
 
     private void HandleMotor()
     {
-        // Apply torque for acceleration/reversing. Front-wheel drive.
         frontLeftWheelCollider.motorTorque = verticalInput * motorForce;
         frontRightWheelCollider.motorTorque = verticalInput * motorForce;
-
-        // Apply the calculated brake force
         ApplyBreaking();
     }
 
     private void ApplyBreaking()
     {
-        // Apply brake force to all four wheels
         frontRightWheelCollider.brakeTorque = currentbreakForce;
         frontLeftWheelCollider.brakeTorque = currentbreakForce;
         rearLeftWheelCollider.brakeTorque = currentbreakForce;
@@ -88,7 +84,6 @@ public class CarController : MonoBehaviour
         frontRightWheelCollider.steerAngle = currentSteerAngle;
     }
 
-    // --- This part remains unchanged, it's perfect ---
     private void UpdateWheels()
     {
         UpdateSingleWheel(frontLeftWheelCollider, frontLeftWheelTransform);

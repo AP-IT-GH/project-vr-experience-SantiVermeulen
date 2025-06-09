@@ -5,6 +5,9 @@ using Unity.MLAgents.Actuators;
 
 public class AgentCarController : Agent
 {
+    // Deze variabele bepaalt of de AI beslissingen mag nemen.
+    public bool canControl = false;
+
     // === Auto Fysica Referenties ===
     [Header("Car Physics")]
     [SerializeField] private WheelCollider frontLeftWheelCollider;
@@ -32,7 +35,6 @@ public class AgentCarController : Agent
     private float lastSteerAction;
     private float lastMoveAction;
 
-    // In Initialize() hoeven we de auto niet te registreren, dat doet TrackCheckpoints nu zelf.
     public override void Initialize()
     {
         rb = GetComponent<Rigidbody>();
@@ -48,7 +50,6 @@ public class AgentCarController : Agent
         transform.position = startPosition;
         transform.rotation = startRotation;
 
-        // **AANPASSING:** Gebruik 'this.transform'
         if (trackCheckpoints != null)
         {
             trackCheckpoints.ResetCheckpoints(this.transform);
@@ -59,7 +60,6 @@ public class AgentCarController : Agent
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        // **AANPASSING:** Gebruik 'this.transform'
         Vector3 dirToNextCheckpoint = transform.InverseTransformPoint(trackCheckpoints.GetNextCheckpointPosition(this.transform)).normalized;
         sensor.AddObservation(dirToNextCheckpoint.x);
         sensor.AddObservation(dirToNextCheckpoint.z);
@@ -74,6 +74,15 @@ public class AgentCarController : Agent
 
     public override void OnActionReceived(ActionBuffers actions)
     {
+        // Als de AI geen controle heeft, doe niets.
+        if (!canControl)
+        {
+            // Zorg ervoor dat de AI auto stopt.
+            HandleMotor(0);
+            HandleSteering(0);
+            return;
+        }
+
         float steerAction = actions.ContinuousActions[0];
         float moveAction = actions.ContinuousActions[1];
 
@@ -85,7 +94,6 @@ public class AgentCarController : Agent
 
         AddReward(-0.001f);
 
-        // **AANPASSING:** Gebruik 'this.transform'
         float currentDistance = Vector3.Distance(transform.position, trackCheckpoints.GetNextCheckpointPosition(this.transform));
         if (currentDistance < lastDistanceToCheckpoint)
         {
