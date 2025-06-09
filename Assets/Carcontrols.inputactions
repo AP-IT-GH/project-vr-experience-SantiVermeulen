@@ -36,17 +36,6 @@
             "bindings": [
                 {
                     "name": "",
-                    "id": "ea5b6f12-5fac-420c-9b44-066650c38fb5",
-                    "path": "<XRSimulatedController>{RightHand}/trigger",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Accelerate",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "f3921b99-5c53-4460-895c-36529d9c8b57",
                     "path": "<Keyboard>/w",
                     "interactions": "",
@@ -58,8 +47,19 @@
                 },
                 {
                     "name": "",
+                    "id": "5617d0f7-c386-4169-9cfe-7a50e4633fb9",
+                    "path": "<XRController>{RightHand}/trigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Accelerate",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "5df4abdf-dc7b-4589-ad7d-7fbcbe8faf52",
-                    "path": "<XRSimulatedController>{LeftHand}/triggerButton",
+                    "path": "<XRController>{LeftHand}/trigger",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
