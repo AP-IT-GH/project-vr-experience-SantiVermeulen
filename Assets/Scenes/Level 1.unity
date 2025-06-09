@@ -579,6 +579,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 1013580488}
     m_Modifications:
     - target: {fileID: 830067487082400902, guid: 67c31ad8498ffe541871cd684f5a81c4, type: 3}
+      propertyPath: Level2
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 830067487082400902, guid: 67c31ad8498ffe541871cd684f5a81c4, type: 3}
       propertyPath: trackCheckpoints
       value: 
       objectReference: {fileID: 2095388855}
