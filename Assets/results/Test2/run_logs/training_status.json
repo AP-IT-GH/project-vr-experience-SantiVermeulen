@@ -1,0 +1,29 @@
+{
+    "Racer": {
+        "checkpoints": [
+            {
+                "steps": 18800,
+                "file_path": "results\\Test2\\Racer\\Racer-18800.onnx",
+                "reward": -1.5000000298023224,
+                "creation_time": 1749423042.7034364,
+                "auxillary_file_paths": [
+                    "results\\Test2\\Racer\\Racer-18800.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 18800,
+            "file_path": "results\\Test2\\Racer.onnx",
+            "reward": -1.5000000298023224,
+            "creation_time": 1749423042.7034364,
+            "auxillary_file_paths": [
+                "results\\Test2\\Racer\\Racer-18800.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.29.0",
+        "torch_version": "1.7.1+cu110"
+    }
+}

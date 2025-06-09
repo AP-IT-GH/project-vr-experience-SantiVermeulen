@@ -4,18 +4,38 @@ using System.Linq;
 
 public class TrackCheckpoints : MonoBehaviour
 {
+    // Sleep al je checkpoint objecten hierin in de Unity Editor, in de juiste volgorde.
     [SerializeField] private List<Checkpoint> checkpointList;
+
+    // De dictionary die de voortgang van elke auto bijhoudt.
     private Dictionary<Transform, CheckpointData> carCheckpointDataDict = new Dictionary<Transform, CheckpointData>();
 
-    private class CheckpointData { public int lap = 0; public int nextCheckpointIndex = 0; public float distanceToNextCheckpoint = 0f; }
-
-    private void Start()
+    // Een interne class om de data per auto op te slaan.
+    private class CheckpointData
     {
-        foreach (Checkpoint checkpoint in checkpointList) { checkpoint.SetTrackManager(this); }
-        GameObject[] cars = GameObject.FindGameObjectsWithTag("Car");
-        foreach (GameObject car in cars) { RegisterCar(car.transform); }
+        public int lap = 0;
+        public int nextCheckpointIndex = 0;
+        public float distanceToNextCheckpoint = 0f;
     }
 
+    // Gebruik Start() om zeker te weten dat alle objecten zijn geladen voordat we ze zoeken.
+    private void Start()
+    {
+        // Koppel de checkpoints aan deze manager.
+        foreach (Checkpoint checkpoint in checkpointList)
+        {
+            checkpoint.SetTrackManager(this);
+        }
+
+        // Ga actief op zoek naar alle auto's met de "Car" tag en registreer ze.
+        GameObject[] cars = GameObject.FindGameObjectsWithTag("Car");
+        foreach (GameObject car in cars)
+        {
+            RegisterCar(car.transform);
+        }
+    }
+
+    // Update de afstand tot het volgende checkpoint voor een accurate ranglijst.
     private void LateUpdate()
     {
         if (carCheckpointDataDict == null) return;
@@ -24,12 +44,16 @@ public class TrackCheckpoints : MonoBehaviour
             if (entry.Key != null && checkpointList != null && checkpointList.Count > 0)
             {
                 int checkpointIndex = entry.Value.nextCheckpointIndex;
-                Vector3 checkpointPos = checkpointList[checkpointIndex].transform.position;
-                entry.Value.distanceToNextCheckpoint = Vector3.Distance(entry.Key.position, checkpointPos);
+                if (checkpointIndex < checkpointList.Count)
+                {
+                    Vector3 checkpointPos = checkpointList[checkpointIndex].transform.position;
+                    entry.Value.distanceToNextCheckpoint = Vector3.Distance(entry.Key.position, checkpointPos);
+                }
             }
         }
     }
 
+    // Registreert een nieuwe auto voor de race.
     public void RegisterCar(Transform carTransform)
     {
         if (!carCheckpointDataDict.ContainsKey(carTransform))
@@ -55,17 +79,28 @@ public class TrackCheckpoints : MonoBehaviour
         if (!carCheckpointDataDict.ContainsKey(carTransform)) return;
 
         CheckpointData data = carCheckpointDataDict[carTransform];
+        int passedCheckpointIndex = checkpointList.IndexOf(checkpoint);
 
-        if (checkpointList.IndexOf(checkpoint) == data.nextCheckpointIndex)
+        // Controleer of de auto het juiste checkpoint in de reeks passeert.
+        if (passedCheckpointIndex == data.nextCheckpointIndex)
         {
+            // **NIEUW: De Debug.Log voor het debuggen van checkpoints.**
+            // Toont een duidelijk bericht in de Console.
+            // We doen +1 omdat programmeurs tellen vanaf 0, maar mensen vanaf 1.
+            Debug.Log($"{carTransform.name} heeft checkpoint {passedCheckpointIndex + 1} / {checkpointList.Count} gehaald.");
+
+            // Update de voortgang van de auto.
             data.nextCheckpointIndex = (data.nextCheckpointIndex + 1) % checkpointList.Count;
 
+            // Als we weer bij het begin zijn, hebben we een ronde voltooid.
             if (data.nextCheckpointIndex == 0)
             {
                 data.lap++;
-                Debug.Log($"{carTransform.name} heeft ronde {data.lap} voltooid!");
+                // Gebruik Warning voor een opvallende gele kleur in de Console.
+                Debug.LogWarning($"{carTransform.name} heeft ronde {data.lap} voltooid!");
             }
 
+            // Geef de AI zijn beloning als het een AI is.
             if (carTransform.TryGetComponent<AgentCarController>(out AgentCarController agent))
             {
                 agent.CheckpointPassed();
@@ -80,12 +115,15 @@ public class TrackCheckpoints : MonoBehaviour
     // Geeft de positie van het volgende checkpoint voor een specifieke auto.
     public Vector3 GetNextCheckpointPosition(Transform carTransform)
     {
-        if (carCheckpointDataDict.ContainsKey(carTransform))
+        if (carCheckpointDataDict.ContainsKey(carTransform) && checkpointList.Count > 0)
         {
             int checkpointIndex = carCheckpointDataDict[carTransform].nextCheckpointIndex;
-            return checkpointList[checkpointIndex].transform.position;
+            if (checkpointIndex < checkpointList.Count)
+            {
+                return checkpointList[checkpointIndex].transform.position;
+            }
         }
-        return transform.position;
+        return transform.position; // Veilige fallback positie.
     }
 
     // Berekent en retourneert de huidige ranglijst.
