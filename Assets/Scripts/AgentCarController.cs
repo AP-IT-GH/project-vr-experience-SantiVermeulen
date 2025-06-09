@@ -17,21 +17,29 @@ public class AgentCarController : Agent
 
     // === Referenties voor Leren ===
     [Header("Learning & Tracking")]
-    [SerializeField] private TrackCheckpoints trackCheckpoints; // De manager van de baan
+    [SerializeField] private TrackCheckpoints trackCheckpoints; // De lokale manager van de baan
     private Vector3 startPosition;
     private Quaternion startRotation;
 
-    // === NIEUW: Timeout Logic ===
-    [Header("Timeout Logic")]
+    // === Timeout & Breadcrumb Logic ===
+    [Header("Training Helpers")]
     [Tooltip("Max tijd (in sec) tussen checkpoints voordat de episode reset.")]
     [SerializeField] private float timeBetweenCheckpointsTimeout = 20f;
     private float timeSinceLastCheckpoint;
+    private float lastDistanceToCheckpoint;
+
+    // === Variabelen voor Slimme Observaties ===
+    private float lastSteerAction;
+    private float lastMoveAction;
 
     public override void Initialize()
     {
         rb = GetComponent<Rigidbody>();
         startPosition = transform.position;
         startRotation = transform.rotation;
+        
+        // Versnel de simulatie voor snellere training
+        Time.timeScale = 20.0f;
     }
 
     public override void OnEpisodeBegin()
@@ -42,50 +50,63 @@ public class AgentCarController : Agent
         transform.position = startPosition;
         transform.rotation = startRotation;
 
-        // Reset de checkpoints en de timer
+        // Reset de checkpoints en de timers/afstanden
         trackCheckpoints.ResetCheckpoints(this);
         timeSinceLastCheckpoint = 0f;
+        // **AANPASSING:** Geef 'this' mee om de juiste afstand te krijgen
+        lastDistanceToCheckpoint = Vector3.Distance(transform.position, trackCheckpoints.GetNextCheckpointPosition(this));
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        // Richting naar het volgende checkpoint (2 waarden)
-        Vector3 dirToNextCheckpoint = transform.InverseTransformPoint(trackCheckpoints.GetNextCheckpointPosition()).normalized;
+        // **AANPASSING:** Geef 'this' mee om de juiste richting te krijgen
+        Vector3 dirToNextCheckpoint = transform.InverseTransformPoint(trackCheckpoints.GetNextCheckpointPosition(this)).normalized;
         sensor.AddObservation(dirToNextCheckpoint.x);
         sensor.AddObservation(dirToNextCheckpoint.z);
 
-        // Snelheid van de auto (1 waarde)
-        sensor.AddObservation(rb.linearVelocity.magnitude / 30f);
+        Vector3 localVelocity = transform.InverseTransformDirection(rb.linearVelocity);
+        sensor.AddObservation(localVelocity.x / 30f);
+        sensor.AddObservation(localVelocity.z / 30f);
+
+        sensor.AddObservation(rb.angularVelocity.y / 2f);
+
+        sensor.AddObservation(lastSteerAction);
+        sensor.AddObservation(lastMoveAction);
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        // Actie 0: Sturen (-1 tot +1)
         float steerAction = actions.ContinuousActions[0];
-        // Actie 1: Gas/Rem (-1 tot +1). Negatief is achteruit.
         float moveAction = actions.ContinuousActions[1];
-
+        
         HandleSteering(steerAction);
         HandleMotor(moveAction);
+        
+        this.lastSteerAction = steerAction;
+        this.lastMoveAction = moveAction;
 
-        // Kleine straf voor tijd die voorbij gaat, motiveert snelheid.
         AddReward(-0.001f);
+
+        // **AANPASSING:** Geef 'this' mee om de juiste afstand te krijgen
+        float currentDistance = Vector3.Distance(transform.position, trackCheckpoints.GetNextCheckpointPosition(this));
+        if (currentDistance < lastDistanceToCheckpoint)
+        {
+            AddReward(0.01f);
+        }
+        lastDistanceToCheckpoint = currentDistance;
     }
 
     private void FixedUpdate()
     {
-        // === NIEUW: Timeout Check ===
-        // Tel de tijd sinds het laatste checkpoint.
         timeSinceLastCheckpoint += Time.fixedDeltaTime;
-        // Als het te lang duurt, is de agent vastgelopen. Reset.
         if (timeSinceLastCheckpoint > timeBetweenCheckpointsTimeout)
         {
-            Debug.Log("Timeout! Te langzaam. Episode reset.");
-            AddReward(-0.5f); // Straf voor vastzitten.
+            AddReward(-0.5f);
             EndEpisode();
         }
     }
-
+    
+    // --- Hulpfuncties ---
     private void HandleMotor(float moveInput)
     {
         frontLeftWheelCollider.motorTorque = moveInput * motorForce;
@@ -104,31 +125,25 @@ public class AgentCarController : Agent
         if (collision.gameObject.CompareTag("Wall"))
         {
             AddReward(-0.5f);
-            Debug.Log("Muur geraakt! -0.5 Reward");
-            // We beëindigen de episode niet direct, zodat de agent kan leren herstellen.
         }
     }
 
-    // === NIEUW: Fall Detector ===
     private void OnTriggerEnter(Collider other)
     {
-        // Controleer of we het object met de tag "FallDetector" raken.
         if (other.CompareTag("FallDetector"))
         {
-            Debug.Log("Van de baan gevallen! -1.0 Reward & Reset.");
-            AddReward(-1.0f); // Grote straf voor vallen.
-            EndEpisode();     // Essentieel: reset de episode onmiddellijk.
+            AddReward(-1.0f);
+
+            EndEpisode();
         }
     }
 
     public void CheckpointPassed()
     {
-        // Beloon de agent en reset de timeout timer!
         AddReward(1.0f);
-        timeSinceLastCheckpoint = 0f; // Heel belangrijk!
-        Debug.Log("Checkpoint gehaald! +1.0 Reward. Timer gereset.");
+        timeSinceLastCheckpoint = 0f;
     }
-
+    
     public override void Heuristic(in ActionBuffers actionsOut)
     {
         var continuousActions = actionsOut.ContinuousActions;
