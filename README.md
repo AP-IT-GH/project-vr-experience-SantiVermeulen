@@ -66,7 +66,7 @@ De flow van een enkele race is als volgt:
 
 De agent werd getraind voor 2.938.700 stappen bij level 1 en 6.764.400 stappen bij level 2. 
 
-[Screenshot van tensorboard](./screenshots/tensorboard.png)
+[Screenshot van tensorboard](./tensorboard.png)
 
 ### Beschrijving van de Tensorboard grafieken
 
