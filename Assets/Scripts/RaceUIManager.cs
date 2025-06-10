@@ -54,7 +54,6 @@ public class RaceUIManager : MonoBehaviour
         SceneManager.LoadScene(nextSceneName);
     }
 
-    // --- NIEUW: Functie voor de "Reset" knop ---
     public void OnResetButtonClicked()
     {
         // Zet de tijd weer op normaal voordat je de scene herlaadt

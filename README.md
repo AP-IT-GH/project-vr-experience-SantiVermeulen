@@ -91,5 +91,3 @@ Dit project demonstreert de kracht van Reinforcement Learning voor het creëren 
 ## Bronvermelding
 
 https://www.youtube.com/watch?v=DU-yminXEX0
-
-a

@@ -10,7 +10,6 @@ public class TrackCheckpoints : MonoBehaviour
     // De dictionary die de voortgang van elke auto bijhoudt.
     private Dictionary<Transform, CheckpointData> carCheckpointDataDict = new Dictionary<Transform, CheckpointData>();
 
-    // Een interne class om de data per auto op te slaan.
     private class CheckpointData
     {
         public int lap = 0;
@@ -18,7 +17,6 @@ public class TrackCheckpoints : MonoBehaviour
         public float distanceToNextCheckpoint = 0f;
     }
 
-    // Gebruik Start() om zeker te weten dat alle objecten zijn geladen voordat we ze zoeken.
     private void Start()
     {
         // Koppel de checkpoints aan deze manager.
@@ -84,9 +82,7 @@ public class TrackCheckpoints : MonoBehaviour
         // Controleer of de auto het juiste checkpoint in de reeks passeert.
         if (passedCheckpointIndex == data.nextCheckpointIndex)
         {
-            // **NIEUW: De Debug.Log voor het debuggen van checkpoints.**
-            // Toont een duidelijk bericht in de Console.
-            // We doen +1 omdat programmeurs tellen vanaf 0, maar mensen vanaf 1.
+            
             Debug.Log($"{carTransform.name} heeft checkpoint {passedCheckpointIndex + 1} / {checkpointList.Count} gehaald.");
 
             // Update de voortgang van de auto.

@@ -1,10 +1,9 @@
 using UnityEngine;
 using System.Collections;
-using TMPro; // Nodig voor TextMeshPro
+using TMPro; 
 
 public class GameStartManager : MonoBehaviour
 {
-    // Sleep je countdown tekst-object hierin in de Editor
     [SerializeField] private TextMeshProUGUI countdownText;
 
     // De tijd in seconden voordat de race start
