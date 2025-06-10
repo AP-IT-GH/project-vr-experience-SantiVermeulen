@@ -4,32 +4,7 @@
 
 ## Inleiding
 
-
-
-
-
-
-
-
-
-
-
-
-Virtual Reality biedt een ongeëvenaarde immersie voor racegames, maar de ervaring wordt vaak beperkt door voorspelbare, gescripte AI-tegenstanders. 
-Dit project doorbreekt die conventie door gebruik te maken van Unity's ML-Agents om een PPO-agent (Proximal Policy Optimization) te trainen. 
-De AI leert niet alleen de optimale racelijn, 
-maar ook emergent gedrag zoals het ontwijken van obstakels. Het resultaat is een tegenstander 
-die zich aanpast en elke race uniek maakt, wat zorgt voor een dynamische en herspeelbare ervaring.
-
-
-
-
-
-
-
-
-
-
+Virtual Reality biedt natuurlijk ongelofelijk veel mogelijkheden voor singleplayer racing games. Wij gaan ervoor zorgen dat een player tegen een AI kan racen, dit doen we door een Unity ML-agent te maken om een PPO-agent te trainen. De AI gaat zo goed mogelijk proberen om de perfecte racelijn te leren en de perfecte lap neer te zetten die jij dan gaat moeten verslagen.
 
 Aan het einde van deze tutorial heeft u een werkende Unity-omgeving opgezet waarin een ML-Agents PPO-model is geconfigureerd en getraind. 
 U zult begrijpen hoe u de observaties, acties en het beloningssysteem definieert om een agent te leren racen op een circuit. Tot slot kunt u de trainingsresultaten analyseren met TensorBoard en 
@@ -89,27 +64,29 @@ De flow van een enkele race is als volgt:
 
 ## Resultaten
 
-De agent werd getraind voor X miljoen stappen op een complex circuit. De resultaten werden gemonitord via TensorBoard.
+De agent werd getraind voor 2.938.700 stappen bij level 1 en 6.764.400 stappen bij level 2. 
 
-
-///////
-
+[Screenshot van tensorboard](./tensorboard.png)
 
 ### Beschrijving van de Tensorboard grafieken
 
-///
+De grafiek toont de "Environment/Episode Length" over tijd (aantal stappen). Er zijn twee trainingsruns weergegeven: "TrainingOvernight_Level2_v11/RacerLvL2" (blauw/Level 2) en "TrainingOvernight_v3/Racer" (grijs/Level 1). De y-as (Environment/Episode Length) geeft aan hoe lang een episode duurt, wat in de context van reinforcement learning vaak gerelateerd is aan hoe goed de agent presteert. De x-as representeert het aantal trainingsstappen (steps).
 
 ### Opvallende waarnemingen tijdens het trainen
 
-///
+#### Level 1 (grijs). 
+
+Bij de racer van lvl 1 zien we dat het allemaal een stuk vlotter gaat (natuurlijk omdat het de map een stuk gemakkelijker is).
+
+#### Level 2 (blauw)
+
+We zien dat de RacerLVL2 in het begin veel meer moeite heeft met op gang komen, maar naargelang de tijd word hij wel stabieler en stabieler.
 
 ## Conclusie
 
 In dit project hebben we succesvol een PPO-agent getraind om autonoom in een VR-omgeving te racen door een beloningssysteem en een set van relevante observaties te ontwerpen. De resultaten tonen aan dat de agent niet alleen leerde de baan te voltooien, maar zijn prestaties ook significant optimaliseerde over miljoenen trainingsstappen. Het eindmodel is in staat om snelle rondetijden neer te zetten en vormt een competente tegenstander.
 
 Dit project demonstreert de kracht van Reinforcement Learning voor het creëren van geloofwaardige NPC's in games. In plaats van een vast, voorspelbaar pad te volgen, ontwikkelde de agent een eigen, effectieve rijstijl op basis van de gestelde regels en beloningen. 
-
-///
 
 ## Bronvermelding
 
